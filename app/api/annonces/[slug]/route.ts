@@ -1,6 +1,6 @@
 // app/api/annonces/[slug]/route.ts
 import { NextResponse } from "next/server";
-import { LISTINGS } from "@/utils/listings";
+import { LISTINGS } from "/utils/listings";
 
 export async function GET(_req: Request, context: any) {
   const slug = context?.params?.slug as string | undefined;
