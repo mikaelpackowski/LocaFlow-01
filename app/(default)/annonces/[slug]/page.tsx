@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LISTINGS, getBySlug } from "utils/listings";
+import { LISTINGS, getBySlug } from "@/utils/listings";
 
 export function generateStaticParams() {
   return LISTINGS.map((l) => ({ slug: l.slug }));
