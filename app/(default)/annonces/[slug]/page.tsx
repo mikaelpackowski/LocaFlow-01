@@ -9,18 +9,22 @@ export function generateStaticParams() {
   return LISTINGS.map((l) => ({ slug: l.slug }));
 }
 
-// Métadonnées par page (types simples pour éviter les conflits)
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const item = getBySlug(params.slug);
+// ✅ Typage “safe” pour Next 15 : props async + any
+export async function generateMetadata(props: any) {
+  const params = await props.params; // marche si c'est un Promise ou un objet direct
+  const item = getBySlug(params?.slug as string);
   return {
     title: item ? `${item.title} – ${item.city} | LocaFlow` : "Annonce | LocaFlow",
     description: item?.description ?? "Annonce immobilière sur LocaFlow",
   };
 }
 
-// Page détail
-export default function ListingDetailPage({ params }: { params: { slug: string } }) {
-  const listing = getBySlug(params.slug);
+// ✅ Page “safe” : props async + any
+export default async function ListingDetailPage(props: any) {
+  const params = await props.params; // supporte Promise ou objet direct
+  const slug = params?.slug as string | undefined;
+  const listing = slug ? getBySlug(slug) : undefined;
+
   if (!listing) return notFound();
 
   return (
