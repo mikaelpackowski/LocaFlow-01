@@ -1,6 +1,7 @@
 // app/(default)/annonces/page.tsx
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
+import SortSelect from "@/components/SortSelect";
 import { LISTINGS } from "@/utils/listings";
 import { headers } from "next/headers";
 
@@ -9,7 +10,7 @@ export const metadata = {
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
-// ✅ Next 15 : headers() est async → on le await
+// Next 15 : headers() est async
 async function buildBaseUrl() {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
@@ -18,7 +19,6 @@ async function buildBaseUrl() {
 }
 
 export default async function AnnoncesPage(props: any) {
-  // Next 15 : peut être un Promise → on attend
   const sp = (await props.searchParams) ?? {};
 
   const q = sp.q ?? "";
@@ -28,7 +28,7 @@ export default async function AnnoncesPage(props: any) {
   const page = Number(sp.page ?? 1);
   const limit = Number(sp.limit ?? 9);
 
-  // ✅ URL absolue (évite “Failed to parse URL from /api/…”)
+  // URL absolue pour le fetch côté serveur
   const base = await buildBaseUrl();
   const url = new URL("/api/annonces", base);
   if (q) url.searchParams.set("q", String(q));
@@ -68,28 +68,13 @@ export default async function AnnoncesPage(props: any) {
         types={types}
       />
 
-      {/* Tri rapide (⚠️ pas d’event handler ici → bouton “Appliquer”) */}
+      {/* Tri auto (client) */}
       <div className="mt-4 flex justify-end">
         <form method="get" className="flex items-center gap-2">
           <input type="hidden" name="q" defaultValue={String(q)} />
           <input type="hidden" name="max" defaultValue={String(max)} />
           <input type="hidden" name="type" defaultValue={String(type)} />
-          <select
-            name="sort"
-            defaultValue={sort ?? ""}
-            className="rounded-lg border px-3 py-2 text-sm"
-            aria-label="Trier par prix"
-          >
-            <option value="">Trier par…</option>
-            <option value="price_asc">Prix croissant</option>
-            <option value="price_desc">Prix décroissant</option>
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-          >
-            Appliquer
-          </button>
+          <SortSelect defaultValue={sort ?? ""} />
         </form>
       </div>
 
