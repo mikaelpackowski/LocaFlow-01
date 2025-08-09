@@ -9,16 +9,17 @@ export const metadata = {
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
-function buildBaseUrl() {
-  const h = headers();
+// ✅ Next 15 : headers() est async
+async function buildBaseUrl() {
+  const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "http";
   return `${proto}://${host}`;
 }
 
-export default async function AnnoncesPage({ searchParams }: { searchParams?: SearchParamsInput }) {
-  // Next 15 peut fournir un Promise ici → on l'attend
-  const sp = (await searchParams) ?? {};
+export default async function AnnoncesPage(props: any) {
+  // ✅ Next 15 peut fournir un Promise ici
+  const sp = (await props.searchParams) ?? {};
 
   const q = sp.q ?? "";
   const max = sp.max ?? "";
@@ -27,8 +28,8 @@ export default async function AnnoncesPage({ searchParams }: { searchParams?: Se
   const page = Number(sp.page ?? 1);
   const limit = Number(sp.limit ?? 9);
 
-  const base = buildBaseUrl();
-  const url = new URL(`${base}/api/annonces`);
+  const base = await buildBaseUrl(); // ✅ await
+  const url = new URL("/api/annonces", base);
   if (q) url.searchParams.set("q", String(q));
   if (max) url.searchParams.set("max", String(max));
   if (type && type !== "all") url.searchParams.set("type", String(type));
