@@ -2,23 +2,14 @@
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
 import { LISTINGS } from "@/utils/listings";
-import { headers } from "next/headers";
 
 export const metadata = {
   title: "Annonces | LocaFlow",
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
-// ✅ Next 15 : headers() est async
-async function buildBaseUrl() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
-
 export default async function AnnoncesPage(props: any) {
-  // ✅ Next 15 peut fournir un Promise ici
+  // Next 15 : parfois Promise, parfois objet → on “await” quoi qu’il arrive
   const sp = (await props.searchParams) ?? {};
 
   const q = sp.q ?? "";
@@ -28,17 +19,23 @@ export default async function AnnoncesPage(props: any) {
   const page = Number(sp.page ?? 1);
   const limit = Number(sp.limit ?? 9);
 
-  const base = await buildBaseUrl(); // ✅ await
-  const url = new URL("/api/annonces", base);
-  if (q) url.searchParams.set("q", String(q));
-  if (max) url.searchParams.set("max", String(max));
-  if (type && type !== "all") url.searchParams.set("type", String(type));
-  if (sort) url.searchParams.set("sort", sort);
-  url.searchParams.set("page", String(page));
-  url.searchParams.set("limit", String(limit));
+  // ✅ Fetch RELATIF → pas besoin de headers() ni d’URL absolue
+  const params = new URLSearchParams();
+  if (q) params.set("q", String(q));
+  if (max) params.set("max", String(max));
+  if (type && type !== "all") params.set("type", String(type));
+  if (sort) params.set("sort", sort);
+  params.set("page", String(page));
+  params.set("limit", String(limit));
 
-  const res = await fetch(url.toString(), { cache: "no-store" });
-  const data = await res.json();
+  let data: any = { items: [], total: 0, page: 1, pages: 1, limit };
+  try {
+    const res = await fetch(`/api/annonces?${params.toString()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`API status ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    console.error("Erreur fetch /api/annonces:", e);
+  }
 
   const cities = Array.from(
     new Set(LISTINGS.flatMap((l) => [l.city, l.district].filter(Boolean) as string[])),
