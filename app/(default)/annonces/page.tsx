@@ -2,14 +2,23 @@
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
 import { LISTINGS } from "@/utils/listings";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Annonces | LocaFlow",
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
+// ✅ Next 15 : headers() est async → on le await
+async function buildBaseUrl() {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  return `${proto}://${host}`;
+}
+
 export default async function AnnoncesPage(props: any) {
-  // Next 15 : parfois Promise, parfois objet → on “await” quoi qu’il arrive
+  // Next 15 : peut être un Promise → on attend
   const sp = (await props.searchParams) ?? {};
 
   const q = sp.q ?? "";
@@ -19,18 +28,19 @@ export default async function AnnoncesPage(props: any) {
   const page = Number(sp.page ?? 1);
   const limit = Number(sp.limit ?? 9);
 
-  // ✅ Fetch RELATIF → pas besoin de headers() ni d’URL absolue
-  const params = new URLSearchParams();
-  if (q) params.set("q", String(q));
-  if (max) params.set("max", String(max));
-  if (type && type !== "all") params.set("type", String(type));
-  if (sort) params.set("sort", sort);
-  params.set("page", String(page));
-  params.set("limit", String(limit));
+  // ✅ URL absolue (évite “Failed to parse URL from /api/…”)
+  const base = await buildBaseUrl();
+  const url = new URL("/api/annonces", base);
+  if (q) url.searchParams.set("q", String(q));
+  if (max) url.searchParams.set("max", String(max));
+  if (type && type !== "all") url.searchParams.set("type", String(type));
+  if (sort) url.searchParams.set("sort", sort);
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("limit", String(limit));
 
   let data: any = { items: [], total: 0, page: 1, pages: 1, limit };
   try {
-    const res = await fetch(`/api/annonces?${params.toString()}`, { cache: "no-store" });
+    const res = await fetch(url.toString(), { cache: "no-store" });
     if (!res.ok) throw new Error(`API status ${res.status}`);
     data = await res.json();
   } catch (e) {
@@ -58,9 +68,9 @@ export default async function AnnoncesPage(props: any) {
         types={types}
       />
 
-      {/* Tri rapide */}
+      {/* Tri rapide (⚠️ pas d’event handler ici → bouton “Appliquer”) */}
       <div className="mt-4 flex justify-end">
-        <form method="get">
+        <form method="get" className="flex items-center gap-2">
           <input type="hidden" name="q" defaultValue={String(q)} />
           <input type="hidden" name="max" defaultValue={String(max)} />
           <input type="hidden" name="type" defaultValue={String(type)} />
@@ -68,12 +78,18 @@ export default async function AnnoncesPage(props: any) {
             name="sort"
             defaultValue={sort ?? ""}
             className="rounded-lg border px-3 py-2 text-sm"
-            onChange={(e) => e.currentTarget.form?.submit()}
+            aria-label="Trier par prix"
           >
             <option value="">Trier par…</option>
             <option value="price_asc">Prix croissant</option>
             <option value="price_desc">Prix décroissant</option>
           </select>
+          <button
+            type="submit"
+            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+          >
+            Appliquer
+          </button>
         </form>
       </div>
 
