@@ -1,7 +1,7 @@
 // app/(default)/annonces/page.tsx
-import ListingCard from "components/ListingCard";
-import SearchBar from "components/SearchBar";
-import { LISTINGS } from "utils/listings";
+import ListingCard from "@/components/ListingCard";
+import SearchBar from "@/components/SearchBar";
+import { LISTINGS } from "@/utils/listings";
 import { headers } from "next/headers";
 
 export const metadata = {
