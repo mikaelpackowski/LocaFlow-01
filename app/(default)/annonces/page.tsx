@@ -1,4 +1,3 @@
-// app/(default)/annonces/page.tsx
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
 import { LISTINGS } from "@/utils/listings";
@@ -10,6 +9,7 @@ export const metadata = {
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
+// Next 15: headers() peut être async → on l'attend
 async function buildBaseUrl() {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
@@ -18,18 +18,19 @@ async function buildBaseUrl() {
 }
 
 export default async function AnnoncesPage(props: any) {
+  // searchParams peut être un Promise
   const sp = (await props.searchParams) ?? {};
 
-  const q    = sp.q ?? "";
+  const q = sp.q ?? "";
   const city = sp.city ?? "";
-  const min  = sp.min ?? "";
-  const max  = sp.max ?? "";
+  const min = sp.min ?? "";
+  const max = sp.max ?? "";
   const type = sp.type ?? "all";
-  const sort = sp.sort as "price_asc" | "price_desc" | undefined;
+  const sort = sp.sort as "price_asc" | "price_desc" | "" | undefined;
   const page = Number(sp.page ?? 1);
   const limit = Number(sp.limit ?? 9);
 
-  // API URL absolue
+  // URL absolue pour l’API
   const base = await buildBaseUrl();
   const url = new URL("/api/annonces", base);
   if (q) url.searchParams.set("q", String(q));
@@ -37,7 +38,7 @@ export default async function AnnoncesPage(props: any) {
   if (min) url.searchParams.set("min", String(min));
   if (max) url.searchParams.set("max", String(max));
   if (type && type !== "all") url.searchParams.set("type", String(type));
-  if (sort) url.searchParams.set("sort", sort);
+  if (sort) url.searchParams.set("sort", String(sort));
   url.searchParams.set("page", String(page));
   url.searchParams.set("limit", String(limit));
 
@@ -50,11 +51,10 @@ export default async function AnnoncesPage(props: any) {
     console.error("Erreur fetch /api/annonces:", e);
   }
 
-  // listes de filtres
+  // options pour les filtres
   const cities = Array.from(
-    new Set(LISTINGS.map((l) => l.city).filter(Boolean) as string[])
+    new Set(LISTINGS.flatMap((l) => [l.city, l.district].filter(Boolean) as string[])),
   ).sort((a, b) => a.localeCompare(b, "fr"));
-
   const types = Array.from(new Set(LISTINGS.map((l) => l.type)));
 
   return (
@@ -75,15 +75,17 @@ export default async function AnnoncesPage(props: any) {
         types={types}
       />
 
-      {/* Tri rapide auto (soumission automatique via AutoSubmitSelect) */}
+      {/* Tri rapide auto (pas de loop : pas d’input caché variable) */}
       <div className="mt-4 flex justify-end">
         <form method="get" className="flex items-center gap-2">
-          {/* On repasse tous les filtres en hidden pour conserver l’état */}
+          {/* On conserve les filtres actuels */}
           <input type="hidden" name="q" defaultValue={String(q)} />
           <input type="hidden" name="city" defaultValue={String(city)} />
           <input type="hidden" name="min" defaultValue={String(min)} />
           <input type="hidden" name="max" defaultValue={String(max)} />
           <input type="hidden" name="type" defaultValue={String(type)} />
+          <input type="hidden" name="page" defaultValue={String(page)} />
+          <input type="hidden" name="limit" defaultValue={String(limit)} />
 
           <AutoSubmitSelect
             name="sort"
