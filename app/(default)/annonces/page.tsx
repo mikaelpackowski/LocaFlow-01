@@ -1,17 +1,14 @@
-// app/(default)/annonces/page.tsx
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
 import { LISTINGS } from "@/utils/listings";
 import { headers } from "next/headers";
+import AutoSubmitSelect from "@/components/AutoSubmitSelect";
 
 export const metadata = {
   title: "Annonces | LocaFlow",
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
-type RawSP = Record<string, string | string[] | undefined>;
-
-// Next 15 : headers() est async
 async function buildBaseUrl() {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
@@ -19,23 +16,21 @@ async function buildBaseUrl() {
   return `${proto}://${host}`;
 }
 
-export default async function AnnoncesPage(
-  { searchParams }: { searchParams: Promise<RawSP> }
-) {
-  const sp = (await searchParams) ?? {};
+export default async function AnnoncesPage(props: any) {
+  const sp = (await props.searchParams) ?? {};
 
-  const q = (sp.q as string) ?? "";
-  const max = (sp.max as string) ?? "";
-  const type = (sp.type as string) ?? "all";
+  const q = sp.q ?? "";
+  const max = sp.max ?? "";
+  const type = sp.type ?? "all";
   const sort = sp.sort as "price_asc" | "price_desc" | undefined;
-  const page = Number((sp.page as string) ?? 1);
-  const limit = Number((sp.limit as string) ?? 9);
+  const page = Number(sp.page ?? 1);
+  const limit = Number(sp.limit ?? 9);
 
   const base = await buildBaseUrl();
   const url = new URL("/api/annonces", base);
-  if (q) url.searchParams.set("q", q);
-  if (max) url.searchParams.set("max", max);
-  if (type && type !== "all") url.searchParams.set("type", type);
+  if (q) url.searchParams.set("q", String(q));
+  if (max) url.searchParams.set("max", String(max));
+  if (type && type !== "all") url.searchParams.set("type", String(type));
   if (sort) url.searchParams.set("sort", sort);
   url.searchParams.set("page", String(page));
   url.searchParams.set("limit", String(limit));
@@ -62,21 +57,22 @@ export default async function AnnoncesPage(
       </p>
 
       <SearchBar
-        defaultQuery={q}
-        defaultMax={max}
-        defaultType={type}
+        defaultQuery={String(q)}
+        defaultMax={String(max)}
+        defaultType={String(type)}
         defaultSort={sort ?? ""}
         cities={cities}
         types={types}
       />
 
-      {/* Tri (pas d’event handler côté server → bouton Appliquer) */}
+      {/* Tri rapide auto */}
       <div className="mt-4 flex justify-end">
         <form method="get" className="flex items-center gap-2">
-          <input type="hidden" name="q" defaultValue={q} />
-          <input type="hidden" name="max" defaultValue={max} />
-          <input type="hidden" name="type" defaultValue={type} />
-          <select
+          <input type="hidden" name="q" defaultValue={String(q)} />
+          <input type="hidden" name="max" defaultValue={String(max)} />
+          <input type="hidden" name="type" defaultValue={String(type)} />
+
+          <AutoSubmitSelect
             name="sort"
             defaultValue={sort ?? ""}
             className="rounded-lg border px-3 py-2 text-sm"
@@ -85,13 +81,7 @@ export default async function AnnoncesPage(
             <option value="">Trier par…</option>
             <option value="price_asc">Prix croissant</option>
             <option value="price_desc">Prix décroissant</option>
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-          >
-            Appliquer
-          </button>
+          </AutoSubmitSelect>
         </form>
       </div>
 
