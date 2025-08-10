@@ -10,14 +10,14 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 z-50 w-full border-b bg-white shadow">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        {/* Logo -> Accueil */}
         <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-blue-600">
           <span>LocaFlow</span>
         </Link>
 
         {/* Menu desktop */}
         <nav className="hidden items-center gap-6 text-sm md:flex">
-          <Link href="/proprietaire/inscription" className="hover:text-blue-600">Créer un compte propriétaire</Link>
+          {/* ⬇️ Va vers la page de présentation propriétaire */}
+          <Link href="/proprietaire" className="hover:text-blue-600">Propriétaire</Link>
           <Link href="/locataire" className="hover:text-blue-600">Locataire</Link>
           <Link href="/annonces" className="hover:text-blue-600">Annonces</Link>
           <Link href="/presentation" className="hover:text-blue-600">Découvrir LocaFlow</Link>
@@ -42,8 +42,8 @@ export default function Header() {
       {/* Menu mobile */}
       {menuOpen && (
         <nav className="space-y-3 border-t bg-white px-4 py-3 text-sm md:hidden">
-          <Link href="/proprietaire/inscription" onClick={closeMenu} className="block hover:text-blue-600">
-            Créer un compte propriétaire
+          <Link href="/proprietaire" onClick={closeMenu} className="block hover:text-blue-600">
+            Propriétaire
           </Link>
           <Link href="/locataire" onClick={closeMenu} className="block hover:text-blue-600">Locataire</Link>
           <Link href="/annonces" onClick={closeMenu} className="block hover:text-blue-600">Annonces</Link>
