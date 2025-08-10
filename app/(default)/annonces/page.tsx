@@ -1,52 +1,62 @@
 // app/(default)/annonces/page.tsx
 import ListingCard from "@/components/ListingCard";
 import SearchBar from "@/components/SearchBar";
-import SortSelect from "@/components/SortSelect";
 import { LISTINGS } from "@/utils/listings";
-import { headers } from "next/headers";
 
 export const metadata = {
   title: "Annonces | LocaFlow",
   description: "Trouvez votre logement et filtrez selon vos critères.",
 };
 
-// Next 15 : headers() est async
-async function buildBaseUrl() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
+type SP = {
+  q?: string;
+  max?: string;
+  type?: string;
+  sort?: "price_asc" | "price_desc" | "";
+  page?: string | number;
+  limit?: string | number;
+};
 
-export default async function AnnoncesPage(props: any) {
+export default async function AnnoncesPage(props: { searchParams?: Promise<SP> | SP }) {
+  // Next 15 peut donner un Promise ici
   const sp = (await props.searchParams) ?? {};
 
-  const q = sp.q ?? "";
-  const max = sp.max ?? "";
-  const type = sp.type ?? "all";
-  const sort = sp.sort as "price_asc" | "price_desc" | undefined;
-  const page = Number(sp.page ?? 1);
-  const limit = Number(sp.limit ?? 9);
+  const q     = (sp.q ?? "").toString().trim().toLowerCase();
+  const max   = Number(sp.max ?? "") || null;
+  const type  = (sp.type ?? "all").toString().trim();
+  const sort  = (sp.sort as "price_asc" | "price_desc" | "") ?? "";
+  const page  = Math.max(1, Number(sp.page ?? 1));
+  const limit = Math.max(1, Number(sp.limit ?? 9));
 
-  // URL absolue pour le fetch côté serveur
-  const base = await buildBaseUrl();
-  const url = new URL("/api/annonces", base);
-  if (q) url.searchParams.set("q", String(q));
-  if (max) url.searchParams.set("max", String(max));
-  if (type && type !== "all") url.searchParams.set("type", String(type));
-  if (sort) url.searchParams.set("sort", sort);
-  url.searchParams.set("page", String(page));
-  url.searchParams.set("limit", String(limit));
+  // --- Filtrage en mémoire ---
+  let items = LISTINGS.slice();
 
-  let data: any = { items: [], total: 0, page: 1, pages: 1, limit };
-  try {
-    const res = await fetch(url.toString(), { cache: "no-store" });
-    if (!res.ok) throw new Error(`API status ${res.status}`);
-    data = await res.json();
-  } catch (e) {
-    console.error("Erreur fetch /api/annonces:", e);
+  if (q) {
+    items = items.filter((l) => {
+      const hay = `${l.title} ${l.city} ${l.district ?? ""} ${l.description ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
   }
 
+  if (type && type !== "all") {
+    items = items.filter((l) => String(l.type).toLowerCase() === type.toLowerCase());
+  }
+
+  if (max) {
+    items = items.filter((l) => l.price <= max);
+  }
+
+  if (sort === "price_asc")  items.sort((a, b) => a.price - b.price);
+  if (sort === "price_desc") items.sort((a, b) => b.price - a.price);
+
+  // --- Pagination ---
+  const total = items.length;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  const start = (page - 1) * limit;
+  const end   = start + limit;
+  const paged = items.slice(start, end);
+
+  // Pour remplir les listes dans la SearchBar
   const cities = Array.from(
     new Set(LISTINGS.flatMap((l) => [l.city, l.district].filter(Boolean) as string[])),
   ).sort((a, b) => a.localeCompare(b, "fr"));
@@ -61,40 +71,48 @@ export default async function AnnoncesPage(props: any) {
 
       <SearchBar
         defaultQuery={String(q)}
-        defaultMax={String(max)}
+        defaultMax={String(max ?? "")}
         defaultType={String(type)}
         defaultSort={sort ?? ""}
         cities={cities}
         types={types}
       />
 
-      {/* Tri auto (client) */}
+      {/* Tri (sans onChange côté serveur) */}
       <div className="mt-4 flex justify-end">
         <form method="get" className="flex items-center gap-2">
           <input type="hidden" name="q" defaultValue={String(q)} />
-          <input type="hidden" name="max" defaultValue={String(max)} />
+          <input type="hidden" name="max" defaultValue={String(max ?? "")} />
           <input type="hidden" name="type" defaultValue={String(type)} />
-          <SortSelect defaultValue={sort ?? ""} />
+          <select name="sort" defaultValue={sort ?? ""} className="rounded-lg border px-3 py-2 text-sm">
+            <option value="">Trier par…</option>
+            <option value="price_asc">Prix croissant</option>
+            <option value="price_desc">Prix décroissant</option>
+          </select>
+          <button
+            type="submit"
+            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+          >
+            Appliquer
+          </button>
         </form>
       </div>
 
-      {data.items.length === 0 ? (
-        <p className="mt-10 text-center text-gray-500">
-          Aucune annonce ne correspond à vos critères.
-        </p>
+      {paged.length === 0 ? (
+        <p className="mt-10 text-center text-gray-500">Aucune annonce ne correspond à vos critères.</p>
       ) : (
         <>
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {data.items.map((l: any) => (
+            {paged.map((l) => (
               <ListingCard key={l.id} listing={l} />
             ))}
           </div>
 
           <Pagination
-            total={data.total}
-            page={data.page}
-            pages={data.pages}
-            limit={data.limit}
+            total={total}
+            page={page}
+            pages={pages}
+            limit={limit}
             searchParams={{
               q: String(q || ""),
               max: String(max || ""),
