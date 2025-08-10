@@ -1,42 +1,73 @@
+
 export const metadata = {
-  title: "Propriétaire – LocaFlow",
-  description: "Outils et automatisations pour propriétaires bailleurs.",
+  title: "Espace Propriétaire | LocaFlow",
+  description:
+    "Comprenez ce que LocaFlow vous apporte : dépôt d’annonce, gestion des locataires, paiements et automatisations.",
 };
 
 export default function ProprietairePage() {
   return (
-    <section className="pt-28 md:pt-36">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-extrabold">
-            Solutions pour <span className="bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">propriétaires</span>
-          </h1>
-          <p className="mt-4 text-gray-600">
-            Centralisez vos biens, contrats et loyers. Automatisez les relances et gagnez du temps.
-          </p>
-        </header>
+    <main className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
+      <header className="text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
+          Espace Propriétaire
+        </h1>
+        <p className="mt-3 text-gray-600 max-w-3xl mx-auto">
+          Déposez vos biens, automatisez vos démarches (quittances, relances),
+          suivez vos paiements et simplifiez vos échanges avec vos locataires.
+        </p>
 
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="rounded-xl border p-6">
-            <h3 className="font-semibold mb-2">Suivi des loyers</h3>
-            <p className="text-gray-600">Tableau de bord, échéances, relances automatiques.</p>
-          </div>
-          <div className="rounded-xl border p-6">
-            <h3 className="font-semibold mb-2">Documents & baux</h3>
-            <p className="text-gray-600">Modèles de baux, états des lieux, archivage sécurisé.</p>
-          </div>
-          <div className="rounded-xl border p-6">
-            <h3 className="font-semibold mb-2">Annonces simplifiées</h3>
-            <p className="text-gray-600">Publiez vos biens en quelques clics et gérez les visites.</p>
-          </div>
-        </div>
-
-        <div className="text-center mt-12">
-          <a href="/auth/login?role=owner" className="inline-flex rounded-full bg-violet-500 px-7 py-3 text-white font-semibold hover:bg-violet-600 transition">
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <a
+            href="/proprietaire/inscription"
+            className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-500"
+          >
             Créer un compte propriétaire
           </a>
+          <a
+            href="/contact"
+            className="rounded-lg border px-5 py-3 font-semibold hover:bg-gray-50"
+          >
+            Parler à un conseiller
+          </a>
         </div>
-      </div>
-    </section>
+      </header>
+
+      <section className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Card
+          title="Dépôt d’annonce"
+          text="Publiez votre bien en quelques clics, avec photos, description et critères."
+        />
+        <Card
+          title="Gestion locative"
+          text="Contrats, quittances, relances automatiques et suivi des paiements."
+        />
+        <Card
+          title="Visibilité"
+          text="Partagez facilement vos annonces et recevez des candidatures qualifiées."
+        />
+        <Card
+          title="Pilotage simple"
+          text="Tableau de bord clair, documents centralisés et exportables."
+        />
+        <Card
+          title="Notifications"
+          text="Recevez des alertes utiles : nouvelles candidatures, échéances, paiements."
+        />
+        <Card
+          title="Support"
+          text="Une équipe à l’écoute pour vous aider si besoin."
+        />
+      </section>
+    </main>
+  );
+}
+
+function Card({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-xl border bg-white p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <p className="mt-2 text-sm text-gray-600">{text}</p>
+    </div>
   );
 }
