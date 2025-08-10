@@ -6,7 +6,14 @@ export default function AutoSubmitSelect(
   props: React.SelectHTMLAttributes<HTMLSelectElement>
 ) {
   const ref = useRef<HTMLSelectElement>(null);
-  const initialValueRef = useRef<string | number | readonly string | undefined>(props.defaultValue);
+  // Stocke la valeur initiale en string pour comparer proprement
+  const initialValueRef = useRef<string>(
+    props.defaultValue === undefined
+      ? ""
+      : Array.isArray(props.defaultValue)
+      ? props.defaultValue.join(",")
+      : String(props.defaultValue)
+  );
 
   useEffect(() => {
     const el = ref.current;
@@ -14,14 +21,12 @@ export default function AutoSubmitSelect(
 
     let raf = 0;
     const handler = () => {
-      // Ne soumet que si la valeur a réellement changé
-      if (el.value !== String(initialValueRef.current ?? "")) {
-        // Petite tempo pour éviter le double submit en StrictMode
+      const current = el.value;
+      if (current !== initialValueRef.current) {
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
           el.form?.requestSubmit();
-          // Mémorise la nouvelle valeur comme référence
-          initialValueRef.current = el.value;
+          initialValueRef.current = current; // mémorise la nouvelle valeur
         });
       }
     };
