@@ -1,4 +1,3 @@
-
 export const metadata = {
   title: "Espace Propriétaire | LocaFlow",
   description:
@@ -17,18 +16,12 @@ export default function ProprietairePage() {
           suivez vos paiements et simplifiez vos échanges avec vos locataires.
         </p>
 
-        <div className="mt-8 flex items-center justify-center gap-3">
+        <div className="mt-8 flex items-center justify-center">
           <a
             href="/proprietaire/inscription"
             className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-500"
           >
             Créer un compte propriétaire
-          </a>
-          <a
-            href="/contact"
-            className="rounded-lg border px-5 py-3 font-semibold hover:bg-gray-50"
-          >
-            Parler à un conseiller
           </a>
         </div>
       </header>
