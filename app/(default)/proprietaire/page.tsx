@@ -9,13 +9,11 @@ export const metadata = {
 export default function ProprietairePage() {
   return (
     <main className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
-      {/* Titre + sous-titre (même style que Locataire) */}
+      {/* Titre + sous-titre */}
       <header className="text-center">
         <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
           Services pour{" "}
-          <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
-            propriétaires
-          </span>
+          <span className="text-violet-500">propriétaires</span>
         </h1>
         <p className="mt-3 text-gray-600 max-w-3xl mx-auto">
           Publiez vos annonces, gérez les candidatures, signez en ligne,
@@ -23,7 +21,7 @@ export default function ProprietairePage() {
         </p>
       </header>
 
-      {/* Cartes (grille identique à la page Locataire) */}
+      {/* Cartes */}
       <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card
           title="Dossier & annonce"
@@ -51,14 +49,13 @@ export default function ProprietairePage() {
         />
       </section>
 
-      {/* Bouton principal : même style/forme/couleur que Locataire */}
+      {/* Bouton principal (violet uni, arrondi complet) */}
       <div className="mt-10 flex justify-center">
         <a
           href="/proprietaire/inscription"
           className="inline-flex items-center justify-center rounded-full
-                     bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500
-                     px-6 py-3 text-white font-semibold shadow-lg
-                     transition hover:opacity-90 focus:outline-none
+                     bg-violet-500 px-6 py-3 text-white font-semibold shadow
+                     transition hover:bg-violet-600 focus:outline-none
                      focus-visible:ring-2 focus-visible:ring-violet-500"
         >
           Créer un compte propriétaire
