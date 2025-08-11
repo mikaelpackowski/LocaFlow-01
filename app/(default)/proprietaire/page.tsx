@@ -13,7 +13,9 @@ export default function ProprietairePage() {
       <header className="text-center">
         <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
           Services pour{" "}
-          <span className="text-violet-500">propriétaires</span>
+          <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+    propriétaires
+          </span>
         </h1>
         <p className="mt-3 text-gray-600 max-w-3xl mx-auto">
           Publiez vos annonces, gérez les candidatures, signez en ligne,
