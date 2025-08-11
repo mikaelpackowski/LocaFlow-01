@@ -1,14 +1,8 @@
-// /auth.ts
+// auth.ts (NextAuth v5)
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-export const {
-  handlers: { GET, POST }, // ces 2 fonctions serviront dans le route handler
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-  // TODO: remplace par tes vrais providers (Google, Email, etc.)
+export const { auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       name: "Email & Mot de passe",
@@ -16,15 +10,23 @@ export const {
         email: { label: "Email", type: "email" },
         password: { label: "Mot de passe", type: "password" },
       },
-      async authorize(credentials) {
-        // Démo : accepte toute combinaison non vide (à remplacer par Prisma/Supabase)
-        if (credentials?.email && credentials.password) {
-          return { id: "demo-user", name: "Demo", email: credentials.email };
+      // v5 signature: (credentials, request)
+      async authorize(credentials, _req) {
+        const email = String(credentials?.email ?? "");
+        const password = String(credentials?.password ?? "");
+
+        // ⚠️ Démo: accepter si non vide (remplace par ta vérif DB)
+        if (email && password) {
+          return {
+            id: "demo-user",
+            name: "Demo",
+            email, // <- string, pas {}
+          };
         }
         return null;
       },
     }),
   ],
-  session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  // (optionnel) pages personnalisées plus tard
+  // pages: { signIn: "/auth/login" },
 });
