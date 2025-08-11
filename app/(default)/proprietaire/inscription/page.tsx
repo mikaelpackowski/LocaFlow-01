@@ -1,152 +1,74 @@
-export const metadata = {
-  title: "Inscription Propriétaire | LocaFlow",
-  description:
-    "Créez votre compte propriétaire pour publier vos biens et gérer votre location.",
-};
+"use client";
 
-export default function InscriptionProprietairePage() {
+import { useState } from "react";
+
+export default function ProprietaireInscriptionPage() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+    setError(null);
+
+    const fd = new FormData(e.currentTarget);
+    const name = fd.get("name");
+    const email = fd.get("email");
+    const password = fd.get("password");
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role: "OWNER" }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Inscription impossible.");
+      setMessage("Compte créé avec succès. Vous pouvez vous connecter.");
+      (e.currentTarget as HTMLFormElement).reset();
+    } catch (err: any) {
+      setError(err.message || "Erreur inconnue.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <main className="mx-auto max-w-3xl px-4 sm:px-6 py-16">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Créer un compte propriétaire
-      </h1>
-      <p className="mt-2 text-gray-600">
-        Renseignez vos informations pour commencer à publier vos annonces et
-        gérer vos biens sur LocaFlow.
-      </p>
+    <main className="mx-auto max-w-md px-4 sm:px-6 py-14">
+      <h1 className="text-2xl font-bold text-gray-900 text-center">Créer un compte propriétaire</h1>
+      <p className="mt-2 text-center text-gray-500">Gérez vos biens simplement avec LocaFlow.</p>
 
-      {/* Formulaire simple côté serveur (action à brancher plus tard) */}
-      <form
-        method="post"
-        action="/api/proprietaires/inscription"
-        className="mt-8 space-y-6 rounded-xl border bg-white p-6 shadow-sm"
-      >
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nom
-            </label>
-            <input
-              name="lastName"
-              required
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="Dupont"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Prénom
-            </label>
-            <input
-              name="firstName"
-              required
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="Marie"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              required
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="nom@exemple.com"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              name="password"
-              required
-              minLength={8}
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="Au moins 8 caractères"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Téléphone
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="+33 6 12 34 56 78"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Ville principale
-            </label>
-            <input
-              name="city"
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="Paris"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Nombre de biens à gérer
-            </label>
-            <input
-              type="number"
-              name="units"
-              min={0}
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              placeholder="ex: 2"
-            />
-          </div>
+      <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border bg-white p-6 shadow">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Nom</label>
+          <input name="name" type="text" className="mt-1 w-full rounded-lg border px-3 py-2" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email *</label>
+          <input name="email" type="email" required className="mt-1 w-full rounded-lg border px-3 py-2" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Mot de passe *</label>
+          <input name="password" type="password" required className="mt-1 w-full rounded-lg border px-3 py-2" />
         </div>
 
-        <div className="flex items-start gap-3">
-          <input id="tos" type="checkbox" name="tos" required />
-          <label htmlFor="tos" className="text-sm text-gray-700">
-            J’accepte les{" "}
-            <a href="/conditions" className="text-indigo-600 underline">
-              conditions d’utilisation
-            </a>{" "}
-            et la{" "}
-            <a href="/confidentialite" className="text-indigo-600 underline">
-              politique de confidentialité
-            </a>
-            .
-          </label>
-        </div>
+        {message && <p className="text-sm text-green-600">{message}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-500"
-          >
-            Créer mon compte
-          </button>
-          <a
-            href="/proprietaire"
-            className="rounded-lg border px-5 py-3 font-semibold hover:bg-gray-50"
-          >
-            Retour
-          </a>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black disabled:opacity-60"
+        >
+          {loading ? "Création…" : "Créer mon compte"}
+        </button>
+
+        <div className="pt-2 text-center text-sm">
+          Déjà inscrit ? <a className="text-indigo-600 hover:underline" href="/api/auth/signin">Se connecter</a>
         </div>
       </form>
-
-      <p className="mt-6 text-sm text-gray-600">
-        Déjà inscrit ?{" "}
-        <a href="/auth/login?role=owner" className="text-indigo-600 underline">
-          Se connecter
-        </a>
-      </p>
     </main>
   );
 }
