@@ -25,7 +25,7 @@ const nacelle = localFont({
 });
 
 export const metadata = {
-  title: "LocaFlow - Simplifiez votre gestion locative",
+  title: "ForGesty - Simplifiez votre gestion locative",
   description: "Plateforme intelligente pour propriétaires, locataires et agences.",
 };
 
